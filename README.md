@@ -56,10 +56,4 @@ This approach demonstrates how deep technical understanding combined with AI eff
 
 ---
 
-## 📸 Screenshots
-
-*(Platzhalter für Screenshots - lade später Bilder hoch und verlinke sie hier)*
-
----
-
-*Created by Duncan (Voyeger12) | 2025*
+ (Voyeger12) | 2025*
