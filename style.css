@@ -1,0 +1,394 @@
+/* =========================================
+   VARIABLES & SETUP
+   ========================================= */
+:root {
+    --bg-color: #050000;
+    --primary: #ff003c; /* Crimson Red - Hauptfarbe */
+    --primary-dim: #550014;
+    --secondary: #00f3ff; /* Cyan - Akzentfarbe */
+    --text: #ffffff;
+    --grid: rgba(255, 0, 60, 0.2);
+    --font-main: 'Share Tech Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: var(--bg-color);
+    color: var(--text);
+    font-family: var(--font-main);
+    /* 100dvh passt sich dynamisch mobilen Browser-Leisten an */
+    height: 100vh;
+    height: 100dvh; 
+    user-select: none;
+    /* Vignette für Fokus */
+    box-shadow: inset 0 0 150px rgba(0,0,0,0.9);
+    /* Verhindert Zoom auf iOS beim schnellen Tippen */
+    touch-action: manipulation; 
+}
+
+/* =========================================
+   BACKGROUND EFFECTS
+   ========================================= */
+/* 3D MOVING GRID (TUNNEL) */
+.grid-floor {
+    position: absolute;
+    bottom: 0; left: -50%; width: 200%; height: 50%;
+    background: 
+        linear-gradient(transparent 0%, var(--bg-color) 100%),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(0deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px, 40px 40px;
+    transform: perspective(300px) rotateX(60deg);
+    animation: moveGrid 1s linear infinite;
+    z-index: 1;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+@keyframes moveGrid {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 40px; }
+}
+
+/* CRT SCANLINES */
+.crt-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* =========================================
+   UI / HUD
+   ========================================= */
+#ui-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 100; pointer-events: none;
+    display: flex; flex-direction: column;
+}
+
+.hud-top {
+    display: flex; gap: 15px; padding: 20px;
+    pointer-events: all; align-items: center;
+    flex-wrap: wrap; /* Wichtig für Mobile */
+}
+
+.hud-module {
+    background: rgba(10, 0, 5, 0.9);
+    border: 1px solid var(--primary);
+    padding: 5px 15px;
+    box-shadow: 0 0 10px var(--primary-dim);
+    min-width: 90px;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.hud-module.right { margin-left: auto; }
+
+/* Combo Special Effect */
+.combo-active {
+    border-color: var(--secondary);
+    box-shadow: 0 0 20px var(--secondary);
+}
+.combo-active .value { color: var(--secondary); text-shadow: 0 0 10px var(--secondary); }
+.combo-active .label { color: var(--secondary); }
+
+.hud-btn {
+    background: transparent; border: 1px solid var(--text);
+    color: var(--text); font-weight: bold; cursor: pointer;
+    padding: 5px 15px; font-size: 1rem; margin-left: 10px;
+}
+.hud-btn:hover { background: var(--text); color: black; }
+
+.label { display: block; font-size: 0.7rem; color: #888; letter-spacing: 1px; }
+.value { font-size: 1.5rem; font-weight: bold; text-shadow: 0 0 5px var(--primary); }
+
+#status-container { margin-top: 10px; text-align: center; width: 100%; }
+#status-msg { font-size: 1.2rem; letter-spacing: 2px; text-shadow: 0 0 5px black; }
+
+/* =========================================
+   GAME STAGE & OBJECTS
+   ========================================= */
+#game-stage { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
+
+/* Screen Shake Animation */
+.shake-screen { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+#player-base { 
+    position: absolute; 
+    bottom: 30px; 
+    left: 50%; transform: translateX(-50%); z-index: 20; 
+    transition: bottom 0.3s ease;
+}
+
+.cannon { 
+    width: 0; height: 0; 
+    border-left: 20px solid transparent; border-right: 20px solid transparent; 
+    border-bottom: 50px solid var(--text);
+    filter: drop-shadow(0 0 15px var(--primary));
+}
+
+.cannon-glow {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+    opacity: 0.3; animation: pulseBase 2s infinite;
+}
+@keyframes pulseBase { 0%, 100% { opacity: 0.2; transform: translate(-50%,-50%) scale(0.8); } 50% { opacity: 0.4; transform: translate(-50%,-50%) scale(1.2); } }
+
+.enemy {
+    position: absolute;
+    color: var(--text);
+    font-size: 1.6rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--primary);
+    padding: 2px 10px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 4px;
+    will-change: top;
+}
+
+.enemy.locked {
+    background: rgba(255, 0, 60, 0.4);
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 20px var(--primary);
+    transform: scale(1.1); z-index: 15;
+}
+
+.laser {
+    position: absolute; background: white; width: 4px;
+    box-shadow: 0 0 15px var(--secondary);
+    transform-origin: bottom center; pointer-events: none;
+    z-index: 5; mix-blend-mode: screen;
+}
+
+.particle {
+    position: absolute; width: 6px; height: 6px;
+    background: var(--primary); border-radius: 50%;
+    pointer-events: none; box-shadow: 0 0 10px var(--primary);
+}
+
+/* =========================================
+   INPUT DISPLAY
+   ========================================= */
+#input-center-container {
+    position: absolute; 
+    bottom: 120px; 
+    width: 100%;
+    display: flex; justify-content: center; pointer-events: none;
+    transition: bottom 0.3s ease;
+}
+#input-display {
+    font-size: 3.5rem; color: var(--secondary);
+    text-shadow: 0 0 15px var(--secondary);
+    border-bottom: 2px solid var(--secondary);
+    padding: 0 20px; background: rgba(0,0,0,0.6);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    min-height: 4rem;
+}
+
+/* =========================================
+   OVERLAYS (Start/Pause/GameOver)
+   ========================================= */
+#overlay, #pause-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(5, 0, 0, 0.92);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 200; backdrop-filter: blur(5px);
+}
+.hidden { display: none !important; }
+
+.menu-content { 
+    text-align: center; border: 2px solid var(--primary); 
+    padding: 50px; background: rgba(0,0,0,0.8); 
+    box-shadow: 0 0 50px var(--primary-dim); 
+}
+.menu-content.small { padding: 30px; min-width: 300px; }
+
+.title {
+    font-size: 5rem; margin: 0; color: white;
+    text-shadow: 3px 0 var(--primary), -3px 0 var(--secondary);
+    animation: glitchTitle 2s infinite;
+}
+@keyframes glitchTitle {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+.subtitle { color:#aaa; letter-spacing:2px; margin-bottom:30px; }
+
+button {
+    margin-top: 30px; background: transparent; color: var(--primary);
+    border: 2px solid var(--primary); padding: 15px 40px; font-size: 1.5rem;
+    cursor: pointer; text-transform: uppercase; transition: all 0.2s;
+    font-family: inherit; font-weight: bold;
+}
+button:hover { 
+    background: var(--primary); color: #000; 
+    box-shadow: 0 0 40px var(--primary); transform: scale(1.05); 
+}
+
+.stats-grid { 
+    margin: 20px 0; font-size: 1.2rem; text-align: left; 
+    border-top: 1px solid #333; padding-top: 15px; 
+    display: grid; gap: 10px;
+}
+
+/* =========================================
+   STORY MODE
+   ========================================= */
+#story-layer {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: #000; 
+    z-index: 250; /* Über Startscreen (200), aber unter Settings (300) */
+    display: flex; justify-content: center; align-items: center;
+    padding: 40px;
+}
+
+.story-content { max-width: 800px; width: 100%; }
+
+#story-terminal {
+    font-size: 2rem; color: var(--primary); 
+    text-shadow: 0 0 10px var(--primary);
+    line-height: 1.5; white-space: pre-wrap;
+    min-height: 200px;
+    border-left: 4px solid var(--primary); 
+    padding-left: 20px;
+}
+
+#story-terminal::after {
+    content: '_'; animation: blinkCursor 0.5s infinite;
+}
+@keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+.story-skip {
+    margin-top: 50px; color: #555; font-size: 1rem; 
+    text-transform: uppercase; letter-spacing: 2px;
+    animation: pulseText 2s infinite; text-align: center;
+}
+@keyframes pulseText { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+/* =========================================
+   SETTINGS MODAL
+   ========================================= */
+#settings-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 300; /* Über allem anderen */
+}
+
+.settings-box { width: 500px; max-width: 90%; text-align: left; }
+.settings-box h2 { text-align: center; color: var(--text); text-shadow: 0 0 10px var(--primary); margin-bottom: 30px; }
+
+.setting-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px;
+}
+.setting-row label { font-size: 1.2rem; color: var(--secondary); }
+
+/* Custom Range Slider (Standardkonform) */
+input[type=range] {
+    -webkit-appearance: none; 
+    appearance: none;
+    width: 50%; background: transparent;
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; height: 20px; width: 10px;
+    background: var(--primary); cursor: pointer; margin-top: -8px;
+    box-shadow: 0 0 10px var(--primary);
+}
+input[type=range]::-webkit-slider-runnable-track {
+    width: 100%; height: 4px; cursor: pointer; background: #333; border: 1px solid #555;
+}
+
+/* Custom Toggle Switch */
+.switch { position: relative; display: inline-block; width: 60px; height: 30px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #333; transition: .4s; border: 1px solid #555;
+}
+.slider:before {
+    position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px;
+    background-color: #888; transition: .4s;
+}
+input:checked + .slider { background-color: var(--primary-dim); border-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(30px); background-color: var(--primary); box-shadow: 0 0 10px var(--primary); }
+
+.small-btn {
+    font-size: 1rem; padding: 10px 20px; border: 1px solid #555; color: #888;
+    background: transparent; cursor: pointer; text-transform: uppercase;
+    font-family: inherit; transition: all 0.2s;
+}
+.small-btn:hover { border-color: var(--text); color: var(--text); background: #222; }
+
+/* =========================================
+   HIDDEN INPUT FIX (Der "Anti-Ghost" Patch)
+   ========================================= */
+#hidden-input {
+    position: absolute;
+    opacity: 0;
+    top: -1000px;
+    left: -1000px;
+    height: 1px;
+    width: 1px;
+    background: transparent;
+    border: none;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* =========================================
+   MOBILE & TABLET OPTIMIZATIONS
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. HUD Anpassung: Kleiner und kompakter */
+    .hud-top { padding: 10px; gap: 5px; }
+    .hud-module { min-width: 60px; padding: 5px 10px; font-size: 0.8rem; }
+    .hud-module .value { font-size: 1rem; }
+    .hud-module .label { font-size: 0.6rem; }
+    .hud-btn { padding: 5px 10px; font-size: 0.9rem; }
+    
+    /* 2. Titel kleiner machen */
+    .title { font-size: 3rem; }
+    .subtitle { font-size: 0.8rem; }
+
+    /* 3. Spieler und Input verschieben (Platz für Tastatur machen) */
+    /* Wir schieben den Spieler höher, ca in die Mitte des unteren Drittels */
+    #player-base { bottom: 25%; }
+    
+    /* Die Texteingabe muss ÜBER dem Spieler sein */
+    #input-center-container { bottom: 35%; }
+    #input-display { font-size: 2rem; min-height: 2.5rem; padding: 0 10px; }
+
+    /* 4. Gegner größer und lesbarer machen */
+    .enemy { font-size: 1.2rem; padding: 2px 6px; }
+
+    /* 5. Terminal Schriftgröße */
+    #story-terminal { font-size: 1.2rem; min-height: 150px; }
+    .story-content { padding: 20px; }
+}
+
+/* Landscape Mode auf Mobile (Wenn das Handy gedreht ist) */
+@media (max-width: 900px) and (orientation: landscape) {
+    #player-base { bottom: 15%; }
+    #input-center-container { bottom: 25%; }
+    .title { font-size: 2.5rem; }
+}

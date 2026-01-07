@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline';">
+    
+    <title>CRIMSON DEFENSE: SYNTHWAVE EDITION</title>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="crt-overlay"></div>
+    <div class="grid-floor"></div>
+
+    <div id="ui-layer">
+        <div class="hud-top">
+            <div class="hud-module">
+                <span class="label">SCORE</span>
+                <span id="score-val" class="value">0</span>
+            </div>
+            <div class="hud-module">
+                <span class="label">ACC</span>
+                <span id="acc-val" class="value">100%</span>
+            </div>
+            <div class="hud-module" id="combo-box">
+                <span class="label">COMBO</span>
+                <span id="combo-val" class="value">x1</span>
+            </div>
+            <div class="hud-module right">
+                <span class="label">ZEIT</span>
+                <span id="time-val" class="value">30.0s</span>
+            </div>
+            
+            <button id="btn-settings-pause" class="hud-btn" title="Optionen">⚙</button>
+            <button id="pause-btn" class="hud-btn">II</button>
+        </div>
+        
+        <div id="status-container">
+            <span id="status-msg">SYSTEM BEREIT</span>
+        </div>
+    </div>
+
+    <div id="game-stage">
+        <div id="player-base">
+            <div class="cannon"></div>
+            <div class="cannon-glow"></div>
+        </div>
+        
+        <div id="input-center-container">
+            <div id="input-display"></div>
+        </div>
+    </div>
+
+    <div id="overlay" class="visible">
+        <div class="menu-content">
+            <h1 class="title">CRIMSON<br>DEFENSE</h1>
+            <p class="subtitle">SYNTHWAVE EDITION</p>
+            
+            <div id="final-stats" class="hidden">
+                <h2 style="color:var(--primary); margin-bottom: 10px;">MISSION FAILED</h2>
+                <div class="stats-grid">
+                    <div>SCORE: <span id="final-score" style="color:white;">0</span></div>
+                    <div>ACCURACY: <span id="final-acc" style="color:white;">0%</span></div>
+                    <div>MAX COMBO: <span id="final-combo" style="color:white;">x0</span></div>
+                </div>
+            </div>
+            
+            <button id="start-btn">INITIIEREN</button>
+            
+            <div style="margin-top: 20px;">
+                <button id="btn-settings-start" class="small-btn">OPTIONEN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pause-overlay" class="hidden">
+        <div class="menu-content small">
+            <h2>PAUSE</h2>
+            <button id="resume-btn">WEITER</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="hidden">
+        <div class="menu-content settings-box">
+            <h2>SYSTEM CONFIG</h2>
+            
+            <div class="setting-row">
+                <label>MUSIK VOL</label>
+                <input type="range" id="opt-music" min="0" max="1" step="0.1">
+            </div>
+            
+            <div class="setting-row">
+                <label>SFX VOL</label>
+                <input type="range" id="opt-sfx" min="0" max="1" step="0.1">
+            </div>
+            
+            <div class="setting-row">
+                <label>CRT EFFEKT</label>
+                <label class="switch">
+                    <input type="checkbox" id="opt-crt">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <label>SCREEN SHAKE</label>
+                <label class="switch">
+                    <input type="checkbox" id="opt-shake">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <button id="btn-settings-close" style="margin-top: 30px;">SPEICHERN & ZURÜCK</button>
+        </div>
+    </div>
+
+    <div id="story-layer" class="hidden">
+        <div class="story-content">
+            <div id="story-terminal"></div>
+            <div class="story-skip">DRÜCKE [ESC] ODER KLICK ZUM ÜBERSPRINGEN</div>
+        </div>
+    </div>
+
+    <input type="text" id="hidden-input" autocomplete="off" spellcheck="false">
+
+    <script src="settings.js"></script>
+    <script src="story.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
