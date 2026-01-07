@@ -5,6 +5,7 @@
 
 **Crimson Defense** is a rhythmic, high-speed typing defense game inspired by 80s arcade aesthetics. It puts the player in the role of a system guardian protecting the mainframe against a viral intrusion.
 
+https://voyeger12.github.io/NeonDefense/
 ---
 
 ## ✨ Key Features
